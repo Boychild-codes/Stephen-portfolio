@@ -72,42 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         revealObserver.observe(el);
     });
 
-    // ========== PROJECT IMAGE SLIDESHOW ==========
+        // ========== PROJECT IMAGE SLIDESHOW ==========
     // Cycles every 10 seconds. Only uses images that actually load.
     document.querySelectorAll('.project-slideshow').forEach((slideshow) => {
         const allImgs = Array.from(slideshow.querySelectorAll('img.slide'));
-        const validImgs = [];
-        let loadedCount = 0;
-        const total = allImgs.length;
-
-        if (total === 0) return;
-
-        allImgs.forEach((img) => {
-            img.style.display = 'none';
-            img.classList.remove('active');
-
-            const markDone = () => {
-                loadedCount++;
-                if (loadedCount === total) startSlideshow();
-            };
-
-            if (img.complete && img.naturalWidth > 0) {
-                validImgs.push(img);
-                markDone();
-            } else {
-                img.addEventListener('load', () => {
-                    validImgs.push(img);
-                    markDone();
-                });
-                img.addEventListener('error', () => {
-                    markDone();
-                });
-            }
-        });
-
-            // ========== PROJECT IMAGE SLIDESHOW ==========
-    // Cycles every 10 seconds. Only uses images that actually load.
-    document.querySelectorAll('.project-slideshow').forEach((slideshow) => {
-        const allImgs = Array.from(slideshow.querySelectorAll('img.slide'));
-    });
-});
