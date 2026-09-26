@@ -1,7 +1,7 @@
 // Vercel Serverless Function — handles POST /api/contact
 // Keeps the Resend API key on the server; the browser never sees it.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     console.error('Contact form error:', err);
     return res.status(500).json({ error: 'Server error. Please try again later.' });
   }
-}
+};
 
 // Minimal HTML-escaping so a message can't inject markup into the email
 function escapeHtml(str) {
