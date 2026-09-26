@@ -882,6 +882,21 @@ ul {
         padding: 12px;
     }
 }
+  
+/* SLIDE CAPTION */
 
-
-
+.slide-caption {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 3;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.55);
+    padding: 3px 9px;
+    border-radius: 100px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    pointer-events: none;
+}
