@@ -37,13 +37,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Contact form
+    // ========== CONTACT FORM (real submission via Resend, through /api/contact) ==========
     const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+    const submitBtn = document.getElementById('contactSubmit');
+
     if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('Thank you! Your message has been received. I will get back to you soon.');
-            contactForm.reset();
+
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            formStatus.textContent = '';
+            formStatus.className = 'form-status';
+
+            const payload = {
+                name: contactForm.name.value,
+                email: contactForm.email.value,
+                message: contactForm.message.value
+            };
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok) {
+                    formStatus.textContent = 'Thanks! Your message has been sent — I\'ll get back to you soon.';
+                    formStatus.classList.add('success');
+                    contactForm.reset();
+                } else {
+                    formStatus.textContent = (data && data.error) || 'Something went wrong. Please try again or email me directly.';
+                    formStatus.classList.add('error');
+                }
+            } catch (err) {
+                formStatus.textContent = 'Network error — please email me directly at stephenjiru@gmail.com.';
+                formStatus.classList.add('error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
     }
 
@@ -73,9 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ========== PROJECT IMAGE SLIDESHOW (with captions) ==========
-    // Cycles every 10 seconds. Only uses images that actually load.
-    // Reads each image's data-caption attribute and displays it in the
-    // .slide-caption label so the gallery shows what's currently on screen.
     document.querySelectorAll('.project-image').forEach((projectImage) => {
         const slideshow = projectImage.querySelector('.project-slideshow');
         const captionEl = projectImage.querySelector('.slide-caption');
