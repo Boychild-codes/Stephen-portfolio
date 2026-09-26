@@ -900,3 +900,17 @@ ul {
     -webkit-backdrop-filter: blur(4px);
     pointer-events: none;
 }
+
+/* ===== Logo icon in navbar ===== */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.logo-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: block;
+}
