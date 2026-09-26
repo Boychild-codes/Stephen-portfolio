@@ -105,22 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function startSlideshow() {
-            if (validImgs.length === 0) return;
-
-            validImgs.forEach((img, i) => {
-                img.style.display = 'block';
-                img.classList.toggle('active', i === 0);
-            });
-
-            if (validImgs.length === 1) return;
-
-            let current = 0;
-            setInterval(() => {
-                validImgs[current].classList.remove('active');
-                current = (current + 1) % validImgs.length;
-                validImgs[current].classList.add('active');
-            }, 10000);
-        }
+            // ========== PROJECT IMAGE SLIDESHOW ==========
+    // Cycles every 10 seconds. Only uses images that actually load.
+    document.querySelectorAll('.project-slideshow').forEach((slideshow) => {
+        const allImgs = Array.from(slideshow.querySelectorAll('img.slide'));
     });
 });
