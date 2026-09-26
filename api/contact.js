@@ -1,38 +1,62 @@
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Vercel Serverless Function — handles POST /api/contact
+// Keeps the Resend API key on the server; the browser never sees it.
 
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, email, message } = req.body;
+  const { name, email, message } = req.body || {};
 
-  // Basic validation
   if (!name || !email || !message) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: 'Please fill in all fields.' });
+  }
+
+  // Very basic email format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
 
   try {
-    const data = await resend.emails.send({
-      from: 'Portfolio <onboarding@resend.dev>', // Change later to your verified domain
-      to: ['stephenjiru@gmail.com'],             // Your email
-      reply_to: email,
-      subject: `New message from ${name} - Portfolio`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
-      `,
+    const resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        // Until you verify your own domain in Resend, you must send FROM
+        // this onboarding address — see the setup notes below.
+        from: 'Portfolio Contact <onboarding@resend.dev>',
+        to: ['stephenjiru@gmail.com'],
+        reply_to: email,
+        subject: `New portfolio message from ${name}`,
+        html: `
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Message:</strong></p>
+          <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
+        `
+      })
     });
 
-    return res.status(200).json({ success: true, data });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Failed to send email' });
+    if (!resendRes.ok) {
+      const errBody = await resendRes.json().catch(() => null);
+      console.error('Resend error:', errBody);
+      return res.status(502).json({ error: 'Failed to send message. Please try again later.' });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Contact form error:', err);
+    return res.status(500).json({ error: 'Server error. Please try again later.' });
   }
+}
+
+// Minimal HTML-escaping so a message can't inject markup into the email
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
