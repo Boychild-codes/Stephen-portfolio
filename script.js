@@ -72,7 +72,68 @@ document.addEventListener('DOMContentLoaded', () => {
         revealObserver.observe(el);
     });
 
-        // ========== PROJECT IMAGE SLIDESHOW ==========
+    // ========== PROJECT IMAGE SLIDESHOW (with captions) ==========
     // Cycles every 10 seconds. Only uses images that actually load.
-    document.querySelectorAll('.project-slideshow').forEach((slideshow) => {
+    // Reads each image's data-caption attribute and displays it in the
+    // .slide-caption label so the gallery shows what's currently on screen.
+    document.querySelectorAll('.project-image').forEach((projectImage) => {
+        const slideshow = projectImage.querySelector('.project-slideshow');
+        const captionEl = projectImage.querySelector('.slide-caption');
+        if (!slideshow) return;
+
         const allImgs = Array.from(slideshow.querySelectorAll('img.slide'));
+        const validImgs = [];
+        let loadedCount = 0;
+        const total = allImgs.length;
+
+        if (total === 0) return;
+
+        allImgs.forEach((img) => {
+            img.style.display = 'none';
+            img.classList.remove('active');
+
+            const markDone = () => {
+                loadedCount++;
+                if (loadedCount === total) startSlideshow();
+            };
+
+            if (img.complete && img.naturalWidth > 0) {
+                validImgs.push(img);
+                markDone();
+            } else {
+                img.addEventListener('load', () => {
+                    validImgs.push(img);
+                    markDone();
+                });
+                img.addEventListener('error', () => {
+                    markDone();
+                });
+            }
+        });
+
+        function updateCaption(img) {
+            if (!captionEl) return;
+            captionEl.textContent = img.dataset.caption || img.alt || '';
+        }
+
+        function startSlideshow() {
+            if (validImgs.length === 0) return;
+
+            validImgs.forEach((img, i) => {
+                img.style.display = 'block';
+                img.classList.toggle('active', i === 0);
+            });
+            updateCaption(validImgs[0]);
+
+            if (validImgs.length === 1) return;
+
+            let current = 0;
+            setInterval(() => {
+                validImgs[current].classList.remove('active');
+                current = (current + 1) % validImgs.length;
+                validImgs[current].classList.add('active');
+                updateCaption(validImgs[current]);
+            }, 10000);
+        }
+    });
+});
