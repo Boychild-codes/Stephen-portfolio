@@ -19,21 +19,38 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
-    // Mobile menu toggle
+    // ========== MOBILE MENU (full-screen overlay) ==========
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
 
     if (menuToggle && navLinks) {
+        const closeMenu = () => {
+            navLinks.classList.remove('open');
+            menuToggle.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('no-scroll');
+        };
+
         menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('open');
+            const isOpen = navLinks.classList.toggle('open');
             menuToggle.classList.toggle('active');
+            menuToggle.setAttribute('aria-expanded', String(isOpen));
+            document.body.classList.toggle('no-scroll', isOpen);
         });
 
+        // Close on link click
         navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('open');
-                menuToggle.classList.remove('active');
-            });
+            link.addEventListener('click', closeMenu);
+        });
+
+        // Close on tapping empty space inside the overlay
+        navLinks.addEventListener('click', (e) => {
+            if (e.target === navLinks) closeMenu();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('open')) closeMenu();
         });
     }
 
